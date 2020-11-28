@@ -10,39 +10,57 @@
 </head>
 
 <body>
-    <canvas id="canvas" width="100" height="100"></canvas>
+    <canvas id="canvas" width="10" height="10"></canvas>
     <script>
-        let canvas = document.getElementById("canvas");
-        canvas.width = document.documentElement.clientWidth
-        canvas.height = document.documentElement.clientHeight
-        let ctx = canvas.getContext("2d");
+        let canvas = document.getElementById("canvas");  //声明一个变量canvas。，并将从html中取到的内容赋值给 canvas
+        canvas.width = document.documentElement.clientWidth //让文档根元素的宽度等于canvas的宽度
+        canvas.height = document.documentElement.clientHeight //让文档根元素的高度等于canvas的宽度
+        let ctx = canvas.getContext("2d"); // MDN范例里有的代码
+        ctx.strokeStyle = "red"; // canvas为红色
+        ctx.lineWidth = 7; // canvas线段的宽度是7
+        ctx.lineCap = "round"; // 线段末尾以圆形结束
 
-        let painting = false
+        let painting = false // 声明一个painting变量，值为false
+        let last // 声明一个last变量
 
+        var isTouchDevice = 'ontouchstart' in document.documentElement; // 将根元素是否有ontouchstart值作为结果，存于isTouchDevise变量中
+        if(isTouchDevice){ //如果值为真
+            canvas.ontouchstart = (e) => { //当用户点击屏幕时执行
+                let x = e.touches[0].clientX //将点击位置距离左侧的距离赋值给x
+                let y = e.touches[0].clientY //将点击位置距离顶部的距离赋值给y
+                last = [x,y] //将x y存入last变量
+            }
+            canvas.ontouchmove = (e) => { //当用户手指在屏幕移动时执行
+                let x = e.touches[0].clientX  //用户点击屏幕的点，距离左侧的距离赋值给x
+                let y = e.touches[0].clientY  //用户点击屏幕的点，距离顶部的距离赋值给y
+                drawLine(last[0],last[1], x, y)  //从上一个x，y点划线到当前的x，y点
+                last = [x, y] //更新x，y的值
+            }
+        }else { //在非触摸屏设备上
 
-        ctx.fillStyle = "black";
-        ctx.strokeStyle = 'none'
+            canvas.onmousedown = (e) => {  //用户点击时
+                painting = true  
+                last = [e.clientX, e.clientY]  //将用户点击屏幕的点，距离左侧的距离x，和顶部的距离y构成last
+            }
 
-        canvas.onmousedown = () => {
-            painting = true
-        }
+            canvas.onmousemove = (e) => {  //用户鼠标移动时
+                if (painting === true) { //用户一边点击，一边移动时
+                drawLine(last[0], last[1], e.clientX, e.clientY) //从上一个x，y点划线到当前的x，y点
+                last = [e.clientX, e.clientY]  //更新x，y的值
+                }
+            }
 
-        canvas.onmousemove = (e) => {
-            if (painting === true) {
-                ctx.beginPath();
-                ctx.arc(e.clientX, e.clientY, 10, 0, 2 * Math.PI);
-                ctx.stroke();
-                ctx.fill();
-            } else {
-                console.log('什么都不做')
+            canvas.onmouseup = () => { //用户鼠标不再点击时
+                painting = false  
             }
         }
 
-        canvas.onmouseup = () => {
-            painting = false
-        }
-
-
+        function drawLine(x1, y1, x2, y2){ 
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        } //从x1，y1，划线至x2，y2 ，
     </script>
 </body>
 
